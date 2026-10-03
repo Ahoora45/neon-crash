@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON CRASH</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    background:#070a12;
+    color:white;
+    font-family:Tahoma,Arial,sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+body.shake{
+    animation:shake .45s;
+}
+
+@keyframes shake{
+    0%,100%{transform:translate(0)}
+    20%{transform:translate(-8px,4px)}
+    40%{transform:translate(8px,-4px)}
+    60%{transform:translate(-6px,-3px)}
+    80%{transform:translate(6px,3px)}
+}
+
+.container{
+    width:min(950px,94%);
+    margin:20px auto;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.header h1{
+    font-size:30px;
+    color:#00eaff;
+    text-shadow:0 0 15px #00eaff;
+}
+
+.header p{
+    color:#7e879c;
+    margin-top:5px;
+    font-size:13px;
+}
+
+.panel{
+    background:rgba(14,19,32,.95);
+    border:1px solid #202b42;
+    border-radius:18px;
+    padding:15px;
+    box-shadow:0 0 30px rgba(0,234,255,.06);
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.box{
+    flex:1;
+    background:#0a0f1c;
+    border:1px solid #202b42;
+    border-radius:12px;
+    padding:10px;
+    text-align:center;
+}
+
+.box small{
+    display:block;
+    color:#78839b;
+    margin-bottom:5px;
+}
+
+.box strong{
+    color:#00eaff;
+    font-size:18px;
+}
+
+.game{
+    position:relative;
+    height:430px;
+    border-radius:15px;
+    overflow:hidden;
+    background:#050810;
+    border:1px solid #182238;
+}
+
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+.multiplier{
+    position:absolute;
+    left:50%;
+    top:38%;
+    transform:translate(-50%,-50%);
+    font-size:58px;
+    font-weight:bold;
+    color:#fff;
+    text-shadow:0 0 20px #00eaff;
+    pointer-events:none;
+    direction:ltr;
+}
+
+.multiplier.crashed{
+    color:#ff3154;
+    text-shadow:0 0 25px #ff3154;
+}
+
+.status{
+    position:absolute;
+    left:50%;
+    top:52%;
+    transform:translateX(-50%);
+    color:#8c96aa;
+    font-size:14px;
+    white-space:nowrap;
+    pointer-events:none;
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px;
+}
+
+input{
+    width:100%;
+    background:#080d18;
+    color:white;
+    border:1px solid #26334e;
+    border-radius:11px;
+    padding:14px;
+    outline:none;
+    font-size:16px;
+    direction:ltr;
+    text-align:center;
+}
+
+input:focus{
+    border-color:#00eaff;
+}
+
+button{
+    width:100%;
+    border:0;
+    border-radius:11px;
+    padding:14px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+}
+
+.start{
+    background:linear-gradient(135deg,#00b8ff,#006cff);
+}
+
+.cashout{
+    background:linear-gradient(135deg,#00d98b,#009e67);
+}
+
+.info{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+}
+
+.infoBox{
+    background:#090e19;
+    border:1px solid #1d2940;
+    border-radius:11px;
+    padding:12px;
+}
+
+.infoBox span{
+    color:#748096;
+    font-size:12px;
+}
+
+.infoBox b{
+    display:block;
+    margin-top:4px;
+    font-size:17px;
+    direction:ltr;
+}
+
+.history{
+    margin-top:12px;
+}
+
+.history h3{
+    font-size:14px;
+    color:#9ba5b8;
+    margin-bottom:8px;
+}
+
+.historyList{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.badge{
+    padding:6px 9px;
+    border-radius:8px;
+    background:#121a29;
+    border:1px solid #26334c;
+    font-size:12px;
+    direction:ltr;
+}
+
+.badge.win{
+    color:#00e6a0;
+    border-color:#007e5a;
+}
+
+.badge.loss{
+    color:#ff4160;
+    border-color:#743040;
+}
+
+.explosion{
+    position:absolute;
+    left:50%;
+    top:43%;
+    transform:translate(-50%,-50%) scale(.2);
+    font-size:85px;
+    opacity:0;
+    pointer-events:none;
+    z-index:5;
+}
+
+.explosion.active{
+    animation:boom .7s ease-out;
+}
+
+@keyframes boom{
+    0%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(.2);
+    }
+    25%{
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.25);
+    }
+    60%{
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1);
+    }
+    100%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(1.7);
+    }
+}
+
+.flash{
+    position:absolute;
+    inset:0;
+    background:#ff1744;
+    opacity:0;
+    pointer-events:none;
+    z-index:4;
+}
+
+.flash.active{
+    animation:flash .35s;
+}
+
+@keyframes flash{
+    0%{opacity:.5}
+    100%{opacity:0}
+}
+
+@media(max-width:650px){
+    .game{
+        height:350px;
+    }
+
+    .multiplier{
+        font-size:45px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+    <h1>🚀 NEON CRASH</h1>
+    <p>بازی آزمایشی با اعتبار مجازی</p>
+</div>
+
+<div class="panel">
+
+<div class="topbar">
+
+<div class="box">
+    <small>موجودی</small>
+    <strong id="balance">1000</strong>
+</div>
+
+<div class="box">
+    <small>ضریب</small>
+    <strong id="topMultiplier">1.00x</strong>
+</div>
+
+</div>
+
+<div class="game">
+
+<canvas id="canvas"></canvas>
+
+<div class="multiplier" id="multiplier">
+1.00x
+</div>
+
+<div class="status" id="status">
+برای شروع راند دکمه را بزن
+</div>
+
+<div class="explosion" id="explosion">
+💥
+</div>
+
+<div class="flash" id="flash"></div>
+
+</div>
+
+<div class="controls">
+
+<div>
+<input
+id="bet"
+type="number"
+min="1"
+value="50"
+placeholder="مقدار اعتبار"
+>
+</div>
+
+<button
+class="start"
+id="startBtn"
+type="button"
+onclick="startGame()"
+>
+🚀 شروع راند
+</button>
+
+<button
+class="cashout"
+id="cashoutBtn"
+type="button"
+onclick="cashOut()"
+disabled
+>
+💰 برداشت
+</button>
+
+</div>
+
+<div class="info">
+
+<div class="infoBox">
+<span>اعتبار شرط</span>
+<b id="betDisplay">0</b>
+</div>
+
+<div class="infoBox">
+<span>سود احتمالی</span>
+<b id="profit">0</b>
+</div>
+
+</div>
+
+<div class="history">
+
+<h3>تاریخچه راندها</h3>
+
+<div
+class="historyList"
+id="historyList"
+></div>
+
+</div>
+
+</div>
+</div>
+
+
+<script>
+
+const canvas =
+document.getElementById("canvas");
+
+const ctx =
+canvas.getContext("2d");
+
+const multiplierEl =
+document.getElementById("multiplier");
+
+const topMultiplierEl =
+document.getElementById("topMultiplier");
+
+const statusEl =
+document.getElementById("status");
+
+const balanceEl =
+document.getElementById("balance");
+
+const profitEl =
+document.getElementById("profit");
+
+const betDisplayEl =
+document.getElementById("betDisplay");
+
+const startBtn =
+document.getElementById("startBtn");
+
+const cashoutBtn =
+document.getElementById("cashoutBtn");
+
+const betInput =
+document.getElementById("bet");
+
+const historyList =
+document.getElementById("historyList");
+
+const explosion =
+document.getElementById("explosion");
+
+const flash =
+document.getElementById("flash");
+
+
+let balance = 1000;
+let bet = 0;
+let multiplier = 1;
+let crashPoint = 0;
+
+let running = false;
+let cashedOut = false;
+
+let lastTime = null;
+let animationFrame = null;
+
+let path = [];
+let particles = [];
+
+let rocketX = 0;
+let rocketY = 0;
+
+
+function resizeCanvas(){
+
+    canvas.width =
+        canvas.clientWidth;
+
+    canvas.height =
+        canvas.clientHeight;
+
+    if(!running){
+        draw();
+    }
+}
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+
+function updateBalance(){
+
+    balanceEl.textContent =
+        Math.floor(balance)
+        .toLocaleString();
+}
+
+
+function getSpeed(m){
+
+    return 0.095 +
+        0.005 *
+        Math.pow(
+            Math.max(m - 1,0),
+            2
+        );
+}
+
+
+function generateCrash(){
+
+    const r =
+        Math.random();
+
+    if(r < 0.12){
+
+        return +(
+            1 +
+            Math.random() * .8
+        ).toFixed(2);
+    }
+
+    return +(
+        1 +
+        Math.pow(
+            Math.random(),
+            2
+        ) * 14
+    ).toFixed(2);
+}
+
+
+function startGame(){
+
+    if(running){
+        return;
+    }
+
+    const value =
+        Number(betInput.value);
+
+    if(
+        !Number.isFinite(value) ||
+        value <= 0
+    ){
+
+        statusEl.textContent =
+            "⚠️ مقدار اعتبار را وارد کن";
+
+        return;
+    }
+
+    if(value > balance){
+
+        statusEl.textContent =
+            "⚠️ اعتبار کافی نیست";
+
+        return;
+    }
+
+    bet =
+        Math.floor(value);
+
+    balance -= bet;
+
+    updateBalance();
+
+    multiplier = 1;
+
+    crashPoint =
+        generateCrash();
+
+    running = true;
+    cashedOut = false;
+
+    lastTime = null;
+
+    path = [];
+    particles = [];
+
+    multiplierEl.classList.remove(
+        "crashed"
+    );
+
+    multiplierEl.textContent =
+        "1.00x";
+
+    topMultiplierEl.textContent =
+        "1.00x";
+
+    betDisplayEl.textContent =
+        bet.toLocaleString();
+
+    profitEl.textContent =
+        bet.toLocaleString();
+
+    statusEl.textContent =
+        "🚀 در حال پرواز...";
+
+    startBtn.disabled = true;
+    cashoutBtn.disabled = false;
+
+    cancelAnimationFrame(
+        animationFrame
+    );
+
+    animationFrame =
+        requestAnimationFrame(
+            gameLoop
+        );
+}
+
+
+function cashOut(){
+
+    if(
+        !running ||
+        cashedOut
+    ){
+        return;
+    }
+
+    const win =
+        Math.floor(
+            bet * multiplier
+        );
+
+    balance += win;
+
+    updateBalance();
+
+    cashedOut = true;
+
+    cashoutBtn.disabled = true;
+
+    statusEl.textContent =
+        "💰 برداشت شد در " +
+        multiplier.toFixed(2) +
+        "x";
+
+    profitEl.textContent =
+        win.toLocaleString();
+
+    addHistory(
+        multiplier,
+        true
+    );
+}
+
+
+function crash(){
+
+    running = false;
+
+    cancelAnimationFrame(
+        animationFrame
+    );
+
+    startBtn.disabled = false;
+    cashoutBtn.disabled = true;
+
+    multiplier =
+        crashPoint;
+
+    multiplierEl.textContent =
+        multiplier.toFixed(2) +
+        "x";
+
+    topMultiplierEl.textContent =
+        multiplier.toFixed(2) +
+        "x";
+
+    multiplierEl.classList.add(
+        "crashed"
+    );
+
+    if(!cashedOut){
+
+        statusEl.textContent =
+            "💥 منفجر شد!";
+
+        profitEl.textContent =
+            "0";
+
+        addHistory(
+            multiplier,
+            false
+        );
+
+    }else{
+
+        statusEl.textContent =
+            "راند تمام شد";
+    }
+
+    flash.classList.remove(
+        "active"
+    );
+
+    void flash.offsetWidth;
+
+    flash.classList.add(
+        "active"
+    );
+
+    document.body.classList.remove(
+        "shake"
+    );
+
+    void document.body.offsetWidth;
+
+    document.body.classList.add(
+        "shake"
+    );
+
+    explosion.classList.remove(
+        "active"
+    );
+
+    void explosion.offsetWidth;
+
+    explosion.classList.add(
+        "active"
+    );
+
+    createParticles();
+
+    let start =
+        performance.now();
+
+    function explosionLoop(now){
+
+        const elapsed =
+            now - start;
+
+        draw();
+
+        if(elapsed < 700){
+
+            requestAnimationFrame(
+                explosionLoop
+            );
+        }
+    }
+
+    requestAnimationFrame(
+        explosionLoop
+    );
+}
+
+
+function createParticles(){
+
+    particles = [];
+
+    for(
+        let i = 0;
+        i < 45;
+        i++
+    ){
+
+        const angle =
+            Math.random() *
+            Math.PI * 2;
+
+        const speed =
+            2 +
+            Math.random() * 5;
+
+        particles.push({
+
+            x:rocketX,
+            y:rocketY,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed,
+
+            life:1,
+
+            size:
+                2 +
+                Math.random() * 5
+        });
+    }
+}
+
+
+function getGraphPoint(m){
+
+    const w =
+        canvas.width;
+
+    const h =
+        canvas.height;
+
+    const progress =
+        Math.min(
+            Math.log(m) /
+            Math.log(12),
+            1
+        );
+
+    const x =
+        45 +
+        progress *
+        (w - 90);
+
+    const normalized =
+        Math.min(
+            m / 12,
+            1
+        );
+
+    const curve =
+        Math.pow(
+            normalized,
+            1.55
+        );
+
+    const y =
+        h - 45 -
+        curve *
+        (h - 90);
+
+    return {
+        x:x,
+        y:y
+    };
+}
+
+
+function gameLoop(timestamp){
+
+    if(!running){
+        return;
+    }
+
+    if(lastTime === null){
+
+        lastTime =
+            timestamp;
+    }
+
+    let dt =
+        (timestamp -
+        lastTime) / 1000;
+
+    lastTime =
+        timestamp;
+
+    dt =
+        Math.min(dt,.05);
+
+    const speed =
+        getSpeed(multiplier);
+
+    multiplier +=
+        speed * dt;
+
+    path.push({
+        m:multiplier
+    });
+
+    if(path.length > 800){
+
+        path.shift();
+    }
+
+    multiplierEl.textContent =
+        multiplier.toFixed(2) +
+        "x";
+
+    topMultiplierEl.textContent =
+        multiplier.toFixed(2) +
+        "x";
+
+    if(!cashedOut){
+
+        const current =
+            Math.floor(
+                bet * multiplier
+            );
+
+        profitEl.textContent =
+            current.toLocaleString();
+    }
+
+    if(
+        multiplier >=
+        crashPoint
+    ){
+
+        multiplier =
+            crashPoint;
+
+        crash();
+
+        return;
+    }
+
+    draw();
+
+    animationFrame =
+        requestAnimationFrame(
+            gameLoop
+        );
+}
+
+
+function draw(){
+
+    const w =
+        canvas.width;
+
+    const h =
+        canvas.height;
+
+    ctx.clearRect(
+        0,
+        0,
+        w,
+        h
+    );
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            h
+        );
+
+    gradient.addColorStop(
+        0,
+        "#050810"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#091321"
+    );
+
+    ctx.fillStyle =
+        gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        w,
+        h
+    );
+
+    drawGrid();
+
+    drawPath();
+
+    drawRocket();
+
+    drawParticles();
+}
+
+
+function drawGrid(){
+
+    const w =
+        canvas.width;
+
+    const h =
+        canvas.height;
+
+    ctx.lineWidth = 1;
+
+    ctx.strokeStyle =
+        "rgba(0,234,255,.06)";
+
+    for(
+        let x = 0;
+        x < w;
+        x += 45
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            0
+        );
+
+        ctx.lineTo(
+            x,
+            h
+        );
+
+        ctx.stroke();
+    }
+
+    for(
+        let y = 0;
+        y < h;
+        y += 45
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            y
+        );
+
+        ctx.lineTo(
+            w,
+            y
+        );
+
+        ctx.stroke();
+    }
+}
+
+
+function drawPath(){
+
+    if(path.length < 2){
+        return;
+    }
+
+    const points = [];
+
+    for(
+        let i = 0;
+        i < path.length;
+        i++
+    ){
+
+        points.push(
+            getGraphPoint(
+                path[i].m
+            )
+        );
+    }
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        points[0].x,
+        points[0].y
+    );
+
+    for(
+        let i = 1;
+        i < points.length;
+        i++
+    ){
+
+        ctx.lineTo(
+            points[i].x,
+            points[i].y
+        );
+    }
+
+    ctx.strokeStyle =
+        "rgba(0,234,255,.18)";
+
+    ctx.lineWidth = 10;
+
+    ctx.lineCap =
+        "round";
+
+    ctx.lineJoin =
+        "round";
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        points[0].x,
+        points[0].y
+    );
+
+    for(
+        let i = 1;
+        i < points.length;
+        i++
+    ){
+
+        ctx.lineTo(
+            points[i].x,
+            points[i].y
+        );
+    }
+
+    ctx.strokeStyle =
+        "#00eaff";
+
+    ctx.lineWidth = 3;
+
+    ctx.stroke();
+
+    const last =
+        points[
+            points.length - 1
+        ];
+
+    rocketX =
+        last.x;
+
+    rocketY =
+        last.y;
+}
+
+
+function drawRocket(){
+
+    if(!path.length){
+        return;
+    }
+
+    const point =
+        getGraphPoint(
+            path[
+                path.length - 1
+            ].m
+        );
+
+    rocketX =
+        point.x;
+
+    rocketY =
+        point.y;
+
+    ctx.save();
+
+    ctx.translate(
+        rocketX,
+        rocketY
+    );
+
+    let angle =
+        -0.55;
+
+    if(path.length > 3){
+
+        const previous =
+            getGraphPoint(
+                path[
+                    path.length - 4
+                ].m
+            );
+
+        angle =
+            Math.atan2(
+                point.y -
+                previous.y,
+
+                point.x -
+                previous.x
+            );
+    }
+
+    ctx.rotate(angle);
+
+    /* شعله */
+
+    ctx.beginPath();
+
+    ctx.moveTo(-22,0);
+
+    ctx.lineTo(-42,-7);
+
+    ctx.lineTo(-35,0);
+
+    ctx.lineTo(-42,7);
+
+    ctx.closePath();
+
+    ctx.fillStyle =
+        "#ff8a00";
+
+    ctx.shadowBlur = 18;
+
+    ctx.shadowColor =
+        "#ff5a00";
+
+    ctx.fill();
+
+    /* بدنه */
+
+    ctx.shadowBlur = 20;
+
+    ctx.shadowColor =
+        "#00eaff";
+
+    ctx.fillStyle =
+        "#dffcff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(24,0);
+
+    ctx.quadraticCurveTo(
+        8,-12,
+        -15,-9
+    );
+
+    ctx.lineTo(
+        -18,
+        9
+    );
+
+    ctx.quadraticCurveTo(
+        8,
+        12,
+        24,
+        0
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+    /* پنجره */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        6,
+        0,
+        5,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "#00bfff";
+
+    ctx.fill();
+
+    ctx.restore();
+}
+
+
+function drawParticles(){
+
+    if(!particles.length){
+        return;
+    }
+
+    for(
+        let i = particles.length - 1;
+        i >= 0;
+        i--
+    ){
+
+        const p =
+            particles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vy += .08;
+
+        p.life -= .025;
+
+        if(p.life <= 0){
+
+            particles.splice(
+                i,
+                1
+            );
+
+            continue;
+        }
+
+        ctx.globalAlpha =
+            p.life;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            "#ff6b00";
+
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+}
+
+
+function addHistory(
+    value,
+    win
+){
+
+    const item =
+        document.createElement(
+            "span"
+        );
+
+    item.className =
+        "badge " +
+        (win ?
+        "win" :
+        "loss");
+
+    item.textContent =
+        value.toFixed(2) +
+        "x";
+
+    historyList.prepend(
+        item
+    );
+
+    while(
+        historyList.children.length >
+        12
+    ){
+
+        historyList.removeChild(
+            historyList.lastChild
+        );
+    }
+}
+
+
+window.onerror =
+function(
+    message,
+    source,
+    line,
+    column
+){
+
+    statusEl.textContent =
+        "⚠️ خطای کد: " +
+        message;
+
+    return false;
+};
+
+
+resizeCanvas();
+
+updateBalance();
+
+draw();
+
+</script>
+
+</body>
+</html>
